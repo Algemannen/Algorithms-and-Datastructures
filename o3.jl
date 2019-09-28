@@ -40,32 +40,37 @@ end
 
 # o2
 function binaryintervalsearch(x, delta, coordinate)
-    median = (size(x)[1] + 1)/2
+    median = x[trunc(Int, (size(x)[1] + 1)/2), coordinate]
     ltarget = median - delta
     htarget = median + delta
-
-    println(bsearchn(x, 1, size(x)[1], ltarget))
+    if(x[trunc(Int, floor(size(x)[1]/2))] < ltarget && x[trunc(Int, ceil(size(x)[1]/2))] > htarget)
+        return (-1, -1)
+    end
+    return (bsearchn(x, 1, size(x)[1], ltarget, coordinate, true),
+            bsearchn(x, 1, size(x)[1], htarget, coordinate, false))
 end
-function bsearchn(x, start, stop, target)
-    println(start)
-    println(stop)
-    if(start-stop == 1)
-        if(x[start] < target)
+function bsearchn(x, start, stop, target, coordinate, negative)
+    if(stop-start <= 1)
+        if(negative && x[start, coordinate] < target)
             return stop
-        else
+        elseif(negative)
             return start
+        elseif(!negative && x[stop, coordinate] > target)
+            return start
+        else
+            return stop
         end
     end
-
+    
+    
     rangedelta = stop - start
     halfrange = trunc(Int, floor(rangedelta/2))
-    println(halfrange)
-    if(x[start + halfrange] < target)
-        return bsearchn(x, start, start+halfrange, target)
-    elseif(x[start+halfrange] > target)
-        return bsearchn(x, start+halfrange, stop, target)
+    if(x[start + halfrange, coordinate] > target)
+        return bsearchn(x, start, start+halfrange, target, coordinate , negative)
+    elseif(x[start+halfrange, coordinate] < target)
+        return bsearchn(x, start+halfrange, stop, target, coordinate , negative)
     else
-        return x[start+halfrange]
+        return start+halfrange
     end
 end
-binaryintervalsearch([1 2; 2 3; 3 0; 4 0; 5 1], 1.5, 1)
+binaryintervalsearch([1.0 0.0; 2.0 0.0; 3.0 0.0], 0.5, 1)
