@@ -1,4 +1,5 @@
 # o1
+# This really shouldn't need any explanation
 function dnasimilarity(s1, s2)
     retval = 0
     for i in 1:length(s1)
@@ -14,6 +15,9 @@ end
 
 
 # o2
+# Iterate through the tree and return the count on whatever
+# it ends at. Has check to return 0 if the sequence it's 
+# checking for doesn't exist
 function searchtree(root, dna)
     i = 1
     node = root
@@ -29,84 +33,56 @@ function searchtree(root, dna)
 end
 
 
-
-Node() = Node(Dict(), 0)
 # o3
-println("zogzaggisfun"[1:4])
+Node() = Node(Dict(), 0)
 function buildtree(dnasequences)
+    # Makes root
     root = Node()
     root.count = length(dnasequences)
-    println("hokus")
-    println()
 
+    # Iterates through the input array of strings
     for i in 1:length(dnasequences)
+
+        # Resets node I'm working on to root (why I need this is clear later)
         node = root
+
+        # Iterates though the letters in the string
         for j in 1:length(dnasequences[i])
-            if(length(dnasequences[i]) <= 1)
-                
-            println()
-            println(dnasequences[i])
-            if(!haskey(node.children[dnasequences[i][j]]))
+            
+            # Creates child node if none exists
+            if(!haskey(node.children, dnasequences[i][j]))
                 node.children[dnasequences[i][j]] = Node()
                 node.children[dnasequences[i][j]].count = 0
             end
             
+            # Update node I'm working on and updates the count of sequences 
+            # that go this far
             node = node.children[dnasequences[i][j]]
             node.count += 1
         end
     end
     return root
 end
-buildtree(["A", "AG", "TG", "T"])
+# println(buildtree(["A", "AG", "TG", "T"]))
 
-import Base: ==
-(==)(a::Node, b::Node) = a.count == b.count && a.children == b.children
-
-
-
-
-### Du skal implementere denne funksjonen ###
-function buildtree(dnasequences)
-    root = Node()
-    # Alle sekvenser har den tomme strengen som prefix:
-    root.count = length(dnasequences)
-
-    # Din kode
-
-    return root
+# o4
+# Same exact thing as o2, but replaces '?' with the four letters and
+# includes the sum of the four new strings, recursively
+function brokendnasearch(root, dna, i=1)
+    node = root
+    for j in i:length(dna)
+        if(dna[j] == '?')
+            sum = 0
+            sum += brokendnasearch(node, dna[1:j-1] * 'A' * dna[j+1:end], j)
+            sum += brokendnasearch(node, dna[1:j-1] * 'T' * dna[j+1:end], j)
+            sum += brokendnasearch(node, dna[1:j-1] * 'C' * dna[j+1:end], j)
+            sum += brokendnasearch(node, dna[1:j-1] * 'G' * dna[j+1:end], j)
+            return sum
+        elseif(haskey(node.children, dna[j]))
+            node = node.children[dna[j]]
+        else
+            return 0
+        end
+    end
+    return node.count
 end
-
-
-
-
-### Konstruert testdata, la stå ###
-dnasequences1 = ["A"]
-dnasequences2 = ["A", "T", "C", "G"]
-dnasequences3 = ["AG", "AGT", "AGTA", "AGTT", "AGTC"]
-dnasequences4 = vcat(dnasequences1, dnasequences2, dnasequences3)
-
-tree1 = Node(Dict('A' => Node(Dict{Char,Node}(), 1)), 1)
-tree2 = Node(Dict('A' => Node(Dict{Char,Node}(), 1),'G' => Node(Dict{Char,Node}(), 1),'T' => Node(Dict{Char,Node}(), 1),'C' => Node(Dict{Char,Node}(), 1)), 4)
-tree3 = Node(Dict('A' => Node(Dict('G' => Node(Dict('T' => Node(Dict('A' => Node(Dict{Char,Node}(), 1),'T' => Node(Dict{Char,Node}(), 1),'C' => Node(Dict{Char,Node}(), 1)), 4)), 5)), 5)), 5)
-tree4 = Node(Dict('A' => Node(Dict('G' => Node(Dict('T' => Node(Dict('A' => Node(Dict{Char,Node}(), 1),'T' => Node(Dict{Char,Node}(), 1),'C' => Node(Dict{Char,Node}(), 1)), 4)), 5)), 7),'G' => Node(Dict{Char,Node}(), 1),'T' => Node(Dict{Char,Node}(), 1),'C' => Node(Dict{Char,Node}(), 1)), 10)
-
-
-
-
-### Tester ###
-# Disse testene blir kjør når du kjører filen
-# Du trenger ikke å endre noe her, men du kan eksperimentere!
-
-printstyled("\n\n\n---------------\nKjører tester!!\n---------------\n"; color = :magenta)
-
-using Test
-@testset "Tester" begin
-	@test buildtree(dnasequences1) == tree1
-	@test buildtree(dnasequences2) == tree2
-    	@test buildtree(dnasequences3) == tree3
-	@test buildtree(dnasequences4) == tree4
-end
-
-println("\nFungerte alt? Prøv å kjør koden i inginious!")
-println("Husk at disse testene ikke alltid sjekker alle edge-cases")
-println("---------------------------------------------------------\n\n")
